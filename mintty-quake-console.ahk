@@ -60,7 +60,7 @@ IniRead, consoleHotkey, %iniFile%, General, hotkey, ^``
 IniRead, startWithWindows, %iniFile%, Display, start_with_windows, 0
 IniRead, startHidden, %iniFile%, Display, start_hidden, 1
 IniRead, alwaysOnTop, %iniFile%, Display, always_on_top, 0
-IniRead, initialHeight, %iniFile%, Display, initial_height, 400
+IniRead, initialHeight, %iniFile%, Display, initial_height, 100 ; percent
 IniRead, initialWidth, %iniFile%, Display, initial_width, 100 ; percent
 IniRead, initialTrans, %iniFile%, Display, initial_trans, 235 ; 0-255 stepping
 IniRead, autohide, %iniFile%, Display, autohide_by_default, 0
@@ -283,8 +283,9 @@ toggleScript(state) {
         VirtScreenPos(ScreenLeft, ScreenTop, ScreenWidth, ScreenHeight)
 
         width := ScreenWidth * widthConsoleWindow / 100
+        height := ScreenHeight * heightConsoleWindow / 100
         left := ScreenLeft + ((ScreenWidth - width) /  2)
-        WinMove, ahk_pid %hw_mintty%, , %left%, -%heightConsoleWindow%, %width%, %heightConsoleWindow% ; resize/move
+        WinMove, ahk_pid %hw_mintty%, , %left%, -%height%, %width%, %height% ; resize/move
 
         scriptEnabled := True
         Menu, Tray, Check, Enabled
@@ -396,9 +397,10 @@ return
     if (WinActive("ahk_pid" . hw_mintty)) {
 
     VirtScreenPos(ScreenLeft, ScreenTop, ScreenWidth, ScreenHeight)
-    if (heightConsoleWindow < ScreenHeight) {
-            heightConsoleWindow += animationStep
-            WinMove, ahk_pid %hw_mintty%,,,,, heightConsoleWindow
+    if (heightConsoleWindow < 100) {
+            heightConsoleWindow += 5
+            height = ScreenHeight * heightConsoleWindow / 100
+            WinMove, ahk_pid %hw_mintty%,,,,, %height%
         }
     }
 return
@@ -406,9 +408,10 @@ return
 ^!NumpadSub::
 ^+-::
     if (WinActive("ahk_pid" . hw_mintty)) {
-        if (heightConsoleWindow > 100) {
-            heightConsoleWindow -= animationStep
-            WinMove, ahk_pid %hw_mintty%,,,,, heightConsoleWindow
+        if (heightConsoleWindow >= 20) {
+            heightConsoleWindow -= 5
+            height = ScreenHeight * heightConsoleWindow / 100
+            WinMove, ahk_pid %hw_mintty%,,,,, %height%
         }
     }
 return
@@ -561,7 +564,7 @@ OptionsGui() {
         Gui, Add, CheckBox, x22 y180 w150 h30 Vautohide Checked%autohide%, Auto-Hide when focus is lost
         Gui, Add, CheckBox, x22 y210 w120 h30 VstartWithWindows Checked%startWithWindows%, Start With Windows
         Gui, Add, CheckBox, x22 y239 w100 h30 ValwaysOnTop Checked%alwaysOnTop%, Always On Top
-        Gui, Add, Text, x22 y280 w100 h20 , Initial Height (px):
+        Gui, Add, Text, x22 y280 w100 h20 , Initial Height (percent):
         Gui, Add, Edit, x22 y300 w100 h20 VinitialHeight, %initialHeight%
         Gui, Add, Text, x22 y330 w115 h20 , Initial Width (percent):
         Gui, Add, Edit, x22 y350 w100 h20 VinitialWidth, %initialWidth%
